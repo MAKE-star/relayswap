@@ -2,7 +2,14 @@ import { useState } from 'react';
 import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
 
-const MORE_ITEMS = ['Docs', 'Blog', 'Help Center', 'Jobs', 'Terms of Use', 'Privacy Policy', 'Status', 'Testnets', 'App Balance'];
+const MORE_ITEMS = [
+  'Bridge Terminal',
+  'Flight Logs',
+  'Migrate Assets',
+  'DeFi Staking',
+  'Presales',
+  'Import Custom Network',
+];
 
 export default function Navbar({ page, setPage, theme, setTheme, connectedWallet, onConnectClick }) {
   const [showMore, setShowMore] = useState(false);
@@ -16,8 +23,8 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
 
       <div className="nav-links">
         <button className={`nav-link ${page === 'swap' ? 'active' : ''}`} onClick={() => setPage('swap')}>Swap</button>
-        <button className={`nav-link ${page === 'vaults' ? 'active' : ''}`} onClick={() => setPage('vaults')}>Vaults</button>
-        <button className={`nav-link ${page === 'txs' ? 'active' : ''}`} onClick={() => setPage('txs')}>Transactions</button>
+        {/* <button className={`nav-link ${page === 'vaults' ? 'active' : ''}`} onClick={() => setPage('vaults')}>Vaults</button> */}
+        <button className={`nav-link ${page === 'txs' ? 'active' : ''}`} onClick={() => setPage('txs')}>Flight Logs</button>
 
         <div style={{ position: 'relative' }}>
           <button
@@ -33,7 +40,9 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
                 <div key={item} className="more-item" onClick={() => setShowMore(false)}>{item}</div>
               ))}
               <div className="more-divider" />
-              <div className="more-social"><span style={{ cursor: 'pointer' }}>𝕏</span></div>
+              <div className="more-social">
+                <span style={{ cursor: 'pointer', fontSize: 16 }}>𝕏</span>
+              </div>
             </div>
           )}
         </div>

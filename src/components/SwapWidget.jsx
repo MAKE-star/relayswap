@@ -16,7 +16,7 @@ function ProgressBar({ step }) {
   );
 }
 
-export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange }) {
+export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange, onViewExplorer }) {
   const [step, setStep] = useState('main');
   const [fromChain, setFromChain] = useState(CHAINS[0]);
   const [toChain,   setToChain]   = useState(CHAINS[2]);
@@ -69,7 +69,39 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   function startSwap() {
     if (!canProceed) return;
     if (!connectedWallet) { onConnectClick(); return; }
-    setStep('wallet');
+  
+    // go straight to loading
+    setSavedAmt(amount);
+    setSavedRec(receive || '0');
+    setTxHash(genHash());
+    setProgress(0);
+    setBlocksDone([false, false, false]);
+    setLoadMsg('Broadcasting...');
+    setStep('loading');
+  
+    let p = 0;
+    const msgs = ['Broadcasting...', 'Confirming on-chain...', 'Validating route...', 'Finalizing...'];
+  
+    const iv = setInterval(() => {
+      p = Math.min(100, p + Math.random() * 9 + 3);
+      setProgress(Math.round(p));
+  
+      if (p > 28) setLoadMsg(msgs[1]);
+      if (p > 55) {
+        setLoadMsg(msgs[2]);
+        setBlocksDone(b => [true, b[1], b[2]]);
+      }
+      if (p > 78) {
+        setLoadMsg(msgs[3]);
+        setBlocksDone(b => [true, true, b[2]]);
+      }
+  
+      if (p >= 100) {
+        setBlocksDone([true, true, true]);
+        clearInterval(iv);
+        setTimeout(() => setStep('confirm'), 500);
+      }
+    }, 350);
   }
 
   function goVerify() { if (wallet) setStep('verify'); }
@@ -381,7 +413,16 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         </div>
         <div className="hash-box">Tx Hash<br /><span>{txHash}</span></div>
         <button className="action-btn purple" onClick={reset} style={{ width: '100%', margin: '0 0 8px', display: 'block' }}>New Transaction</button>
-        <button className="action-btn outline" onClick={reset} style={{ width: '100%', margin: 0, display: 'block' }}>View on Explorer ↗</button>
+        <button
+          className="action-btn outline"
+          onClick={() => {
+            reset();
+            onViewExplorer && onViewExplorer();
+          }}
+          style={{ width: '100%', margin: 0, display: 'block' }}
+        >
+          View on Explorer ↗
+        </button>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import ChatWidget from './components/ChatWidget';
 export default function App() {
   const [theme, setTheme] = useState('dark');
   const [page, setPage] = useState('swap');
-  const [swapMode, setSwapMode] = useState('swap'); // lifted from SwapWidget
+  const [swapMode, setSwapMode] = useState('swap');
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [tempWallet, setTempWallet] = useState(null);
@@ -23,6 +23,7 @@ export default function App() {
     else setShowWalletModal(true);
   }
 
+  // Called by WalletModal after BIP-39 + address steps complete
   function handleWalletContinue() {
     if (tempWallet) {
       setConnectedWallet(tempWallet);
@@ -32,8 +33,7 @@ export default function App() {
   }
 
   const subTitle =
-    page === 'vaults' ? 'Relay Vaults' :
-    page === 'txs'    ? 'Relay Transactions' :
+    page === 'txs'        ? 'Flight Logs' :
     swapMode === 'bridge' ? 'Relay Bridge' : 'Relay Swap';
 
   return (
@@ -76,11 +76,12 @@ export default function App() {
             onConnectClick={() => setShowWalletModal(true)}
             mode={swapMode}
             onModeChange={setSwapMode}
+            onViewExplorer={() => setPage('txs')}
           />
         </div>
       )}
 
-      {page === 'vaults' && <VaultsPage />}
+      {/* {page === 'vaults' && <VaultsPage />} */}
       {page === 'txs' && <TransactionsPage />}
 
       {/* WALLET MODAL */}
@@ -89,7 +90,7 @@ export default function App() {
           onClose={() => { setShowWalletModal(false); setTempWallet(null); }}
           onSelect={setTempWallet}
           selectedWallet={tempWallet}
-          showContinue
+          showContinue={false}
           onContinue={handleWalletContinue}
         />
       )}
