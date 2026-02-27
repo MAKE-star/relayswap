@@ -179,7 +179,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                     onChange={e => { setCustomSlip(e.target.value.replace(/[^0-9.]/g, '')); setSlippage('custom'); }} />
                   <span className="csp-pct">%</span>
                 </div>
-                <div className="csp-hint">Values above 5% may result in a poor trade</div>
+                {/* <div className="csp-hint">Values above 5% may result in a poor trade</div> */}
               </div>
             )}
           </div>
@@ -196,7 +196,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         </div>
 
         {/* ── FROM NETWORK ── */}
-        <div className="section-block">
+        {/* <div className="section-block">
           <div className="section-label">From Network</div>
           <div className="network-chips">
             {CHAINS.map(c => (
@@ -208,10 +208,10 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* ── TO NETWORK — bridge only ── */}
-        {mode === 'bridge' && (
+        {/* {mode === 'bridge' && (
           <div className="section-block">
             <div className="section-label">To Network</div>
             <div className="network-chips">
@@ -225,7 +225,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* ── YOU PAY ── */}
         <div className="section-block">
