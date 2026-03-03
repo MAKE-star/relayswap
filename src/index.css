@@ -305,13 +305,14 @@ body[data-theme="light"] .connect-btn {
 
 .connect-btn.connected {
   background: var(--surface2);
-  color: var(--text);
+  color: var(--text) !important;
   border: 1px solid var(--border);
 }
 
 .connect-btn.connected:hover {
   background: var(--hover);
   border-color: var(--border2);
+  color: var(--text) !important;
 }
 
 /* ══════════════════════════════════════════

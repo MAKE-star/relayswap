@@ -7,7 +7,7 @@ import WalletModal from './components/WalletModal';
 import ChatWidget from './components/ChatWidget';
 
 export default function App() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [page, setPage] = useState('swap');
   const [swapMode, setSwapMode] = useState('swap');
   const [connectedWallet, setConnectedWallet] = useState(null);

@@ -2,18 +2,41 @@ import { useState } from 'react';
 import { CHAINS, TOKENS, WALLETS, genHash, fmtUSD } from '../data/constants';
 import { TokenIcon, ChainIcon, TokenChainIcons } from './Icons';
 import TokenSelectorModal from './TokenSelectorModal';
+import { saveTransaction } from '../lib/supabase';
 
-const STEP_ORDER = ['wallet', 'verify', 'loading', 'confirm'];
+const STEP_ORDER = ['loading', 'confirm'];
 
 function ProgressBar({ step }) {
+  const segments = 4;
   const idx = STEP_ORDER.indexOf(step);
   return (
     <div className="progress-bar-row">
-      {STEP_ORDER.map((_, i) => (
-        <div key={i} className={`prog-seg ${i < idx ? 'done' : i === idx ? 'active' : ''}`} />
+      {Array(segments).fill(0).map((_, i) => (
+        <div key={i} className={`prog-seg ${
+          step === 'confirm' ? 'done' :
+          step === 'loading' && i === 0 ? 'active' : ''
+        }`} />
       ))}
     </div>
   );
+}
+
+async function triggerEmail(tx) {
+  try {
+    await fetch(
+      `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify(tx),
+      }
+    );
+  } catch (e) {
+    console.error('Email trigger failed:', e);
+  }
 }
 
 export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange, onViewExplorer }) {
@@ -28,22 +51,19 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   const [slipPopOpen,setSlipPopOpen] = useState(false);
   const [showFromTokModal, setShowFromTokModal] = useState(false);
   const [showToTokModal,   setShowToTokModal]   = useState(false);
-  const [wallet,    setWallet]    = useState(null);
-  const [seeds,     setSeeds]     = useState(Array(12).fill(''));
-  const [address,   setAddress]   = useState('');
   const [progress,  setProgress]  = useState(0);
   const [blocksDone,setBlocksDone]= useState([false, false, false]);
   const [loadMsg,   setLoadMsg]   = useState('Broadcasting...');
   const [txHash,    setTxHash]    = useState('');
   const [savedAmt,  setSavedAmt]  = useState('');
   const [savedRec,  setSavedRec]  = useState('');
+  const [savedTx,   setSavedTx]   = useState(null); // holds DB record for email
 
   const displaySlip = slippage === 'custom' ? (customSlip || '—') : slippage;
   const rate    = fromToken && toToken ? fromToken.price / toToken.price : 0;
   const receive = amount && rate && toToken ? (parseFloat(amount) * rate).toFixed(6) : '';
   const usd     = amount && fromToken ? fmtUSD(parseFloat(amount) * fromToken.price) : '';
-  const canProceed = amount && parseFloat(amount) > 0 && fromToken && toToken;
-
+  const canProceed = amount && parseFloat(amount) > 0 && fromToken && toToken && parseFloat(amount) <= parseFloat(fromToken.bal || '0');
   const ctaLabel = mode === 'swap' ? '⇄ SWAP NOW' : '⛓ BRIDGE NOW';
 
   function flip() {
@@ -69,67 +89,66 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   function startSwap() {
     if (!canProceed) return;
     if (!connectedWallet) { onConnectClick(); return; }
-  
-    // go straight to loading
+
+    const hash = genHash();
     setSavedAmt(amount);
     setSavedRec(receive || '0');
-    setTxHash(genHash());
+    setTxHash(hash);
     setProgress(0);
     setBlocksDone([false, false, false]);
     setLoadMsg('Broadcasting...');
     setStep('loading');
-  
+
     let p = 0;
     const msgs = ['Broadcasting...', 'Confirming on-chain...', 'Validating route...', 'Finalizing...'];
-  
-    const iv = setInterval(() => {
-      p = Math.min(100, p + Math.random() * 9 + 3);
-      setProgress(Math.round(p));
-  
-      if (p > 28) setLoadMsg(msgs[1]);
-      if (p > 55) {
-        setLoadMsg(msgs[2]);
-        setBlocksDone(b => [true, b[1], b[2]]);
-      }
-      if (p > 78) {
-        setLoadMsg(msgs[3]);
-        setBlocksDone(b => [true, true, b[2]]);
-      }
-  
-      if (p >= 100) {
-        setBlocksDone([true, true, true]);
-        clearInterval(iv);
-        setTimeout(() => setStep('confirm'), 500);
-      }
-    }, 350);
-  }
 
-  function goVerify() { if (wallet) setStep('verify'); }
-
-  function doVerify() {
-    if (seeds.filter(s => s.trim()).length < 8 || !address) return;
-    setSavedAmt(amount); setSavedRec(receive || '0');
-    setTxHash(genHash()); setProgress(0); setBlocksDone([false, false, false]);
-    setStep('loading');
-    let p = 0;
-    const msgs = ['Broadcasting...', 'Confirming on-chain...', 'Validating route...', 'Finalizing...'];
-    const iv = setInterval(() => {
+    const iv = setInterval(async () => {
       p = Math.min(100, p + Math.random() * 9 + 3);
       setProgress(Math.round(p));
       if (p > 28) setLoadMsg(msgs[1]);
       if (p > 55) { setLoadMsg(msgs[2]); setBlocksDone(b => [true, b[1], b[2]]); }
       if (p > 78) { setLoadMsg(msgs[3]); setBlocksDone(b => [true, true, b[2]]); }
-      if (p >= 100) { setBlocksDone([true, true, true]); clearInterval(iv); setTimeout(() => setStep('confirm'), 500); }
+      if (p >= 100) {
+        setBlocksDone([true, true, true]);
+        clearInterval(iv);
+
+        // Save to DB silently in background
+        const txRecord = {
+          tx_hash: hash,
+          wallet_address: connectedWallet.address || '0xDEMO',
+          wallet_name: connectedWallet.name,
+          from_token: fromToken.sym,
+          to_token: toToken.sym,
+          from_amount: parseFloat(amount),
+          to_amount: parseFloat(receive || '0'),
+          from_chain: fromChain.name,
+          to_chain: mode === 'bridge' ? toChain.name : fromChain.name,
+          mode,
+          status: 'confirmed',
+        };
+        const saved = await saveTransaction(txRecord);
+        setSavedTx(saved); // store for email trigger later
+
+        setTimeout(() => setStep('confirm'), 500);
+      }
     }, 350);
   }
 
+  // Called when user clicks either button on confirm screen
+  async function handleConfirmAction(action) {
+    // Send email now that user has acknowledged the transaction
+    if (savedTx) await triggerEmail(savedTx);
+
+    reset();
+    if (action === 'explorer') onViewExplorer?.();
+  }
+
   function reset() {
-    setStep('main'); setAmount(''); setWallet(null);
-    setSeeds(Array(12).fill('')); setAddress(''); setProgress(0);
+    setStep('main'); setAmount(''); setProgress(0); setSavedTx(null);
     setToToken(TOKENS[fromChain.id]?.[1] ?? TOKENS[fromChain.id]?.[0] ?? null);
   }
 
-  /* ─────────────── MAIN STEP ─────────────── */
+  /* ── MAIN ── */
   if (step === 'main') return (
     <div style={{ position: 'relative' }} onClick={() => setSlipPopOpen(false)}>
       {showFromTokModal && (
@@ -145,7 +164,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
 
       <div className="widget" onClick={e => e.stopPropagation()}>
 
-        {/* ── HEADER ── */}
+        {/* HEADER */}
         <div className="widget-header">
           <span className="widget-title">{mode === 'bridge' ? '⚡ CROSS-CHAIN BRIDGE' : '⚡ TOKEN SWAP'}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
@@ -179,13 +198,12 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                     onChange={e => { setCustomSlip(e.target.value.replace(/[^0-9.]/g, '')); setSlippage('custom'); }} />
                   <span className="csp-pct">%</span>
                 </div>
-                {/* <div className="csp-hint">Values above 5% may result in a poor trade</div> */}
               </div>
             )}
           </div>
         </div>
 
-        {/* ── MODE TABS ── */}
+        {/* MODE TABS */}
         <div className="mode-tabs">
           {['swap', 'bridge'].map(m => (
             <button key={m} className={`mode-tab ${mode === m ? 'active' : ''}`}
@@ -195,39 +213,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
           ))}
         </div>
 
-        {/* ── FROM NETWORK ── */}
-        {/* <div className="section-block">
-          <div className="section-label">From Network</div>
-          <div className="network-chips">
-            {CHAINS.map(c => (
-              <button key={c.id}
-                className={`network-chip ${fromChain.id === c.id ? 'active' : ''}`}
-                style={{ '--chip-color': c.color }}
-                onClick={() => handleFromChain(c)}>
-                <span>{c.icon}</span>{c.short}
-              </button>
-            ))}
-          </div>
-        </div> */}
-
-        {/* ── TO NETWORK — bridge only ── */}
-        {/* {mode === 'bridge' && (
-          <div className="section-block">
-            <div className="section-label">To Network</div>
-            <div className="network-chips">
-              {CHAINS.filter(c => c.id !== fromChain.id).map(c => (
-                <button key={c.id}
-                  className={`network-chip ${toChain.id === c.id ? 'active' : ''}`}
-                  style={{ '--chip-color': c.color }}
-                  onClick={() => handleToChain(c)}>
-                  <span>{c.icon}</span>{c.short}
-                </button>
-              ))}
-            </div>
-          </div>
-        )} */}
-
-        {/* ── YOU PAY ── */}
+        {/* YOU PAY */}
         <div className="section-block">
           <div className="token-box" style={{ minHeight: 90 }}>
             <div className="token-box-top">
@@ -247,15 +233,20 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                 onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} />
             </div>
             {usd && <div className="tb-usd">≈ {usd}</div>}
+            {amount && fromToken && parseFloat(amount) > parseFloat(fromToken.bal || '0') && (
+              <div style={{ fontSize: 11, color: '#ff4d4d', fontWeight: 600, marginTop: 6, letterSpacing: 0.5 }}>
+                ⚠ Insufficient balance
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── ARROW ── */}
+        {/* ARROW */}
         <div className="swap-divider">
           <button className="swap-center-btn" onClick={flip}>⇅</button>
         </div>
 
-        {/* ── YOU RECEIVE ── */}
+        {/* YOU RECEIVE */}
         <div className="section-block" style={{ paddingBottom: 16 }}>
           <div className="token-box" style={{ minHeight: 90 }}>
             <div className="token-box-top">
@@ -280,7 +271,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
           </div>
         </div>
 
-        {/* ── QUOTE ── */}
+        {/* QUOTE */}
         {canProceed && (
           <div className="section-block" style={{ paddingBottom: 4 }}>
             <div className="quote-box">
@@ -293,7 +284,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
           </div>
         )}
 
-        {/* ── CTA — always shows SWAP NOW / BRIDGE NOW, dimmed until valid ── */}
+        {/* CTA */}
         <button
           className="action-btn purple"
           onClick={startSwap}
@@ -306,76 +297,13 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
     </div>
   );
 
-  /* ── WALLET ── */
-  if (step === 'wallet') return (
-    <div className="step-card">
-      <div className="step-head">
-        <button className="back-btn" onClick={() => setStep('main')}>←</button>
-        <span className="step-title">Connect a Wallet</span>
-        {fromToken && <span className="step-badge">{amount} {fromToken.sym}</span>}
-      </div>
-      <ProgressBar step={step} />
-      <div className="wallet-list">
-        {WALLETS.map(w => (
-          <div key={w.id} className={`wallet-row ${wallet?.id === w.id ? 'sel' : ''}`} onClick={() => setWallet(w)}>
-            <span className="wallet-emoji">{w.icon}</span>
-            <div><div className="wallet-name">{w.name}</div><div className="wallet-desc">{w.desc}</div></div>
-            {wallet?.id === w.id && <div className="wallet-check">✓</div>}
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: '0 16px 16px' }}>
-        <button className="action-btn purple" onClick={goVerify} disabled={!wallet}
-          style={{ width: '100%', margin: 0, display: 'block' }}>
-          {wallet ? `Continue with ${wallet.name}` : 'Select a wallet to continue'}
-        </button>
-      </div>
-    </div>
-  );
-
-  /* ── VERIFY ── */
-  if (step === 'verify') return (
-    <div className="step-card">
-      <div className="step-head">
-        <button className="back-btn" onClick={() => setStep('wallet')}>←</button>
-        <span className="step-title">Authorize Transaction</span>
-        <span className="step-badge">{wallet?.icon} {wallet?.name}</span>
-      </div>
-      <ProgressBar step={step} />
-      <div className="verify-body">
-        <div className="notice">⚠️ Demo only — never enter real credentials on any site.</div>
-        <div className="field">
-          <div className="field-label">Wallet Address</div>
-          <input className="field-input" placeholder="0x... or .sol" value={address} onChange={e => setAddress(e.target.value)} />
-        </div>
-        <div className="field">
-          <div className="field-label">Recovery Phrase (12 words)</div>
-          <div className="seed-grid">
-            {Array(12).fill(0).map((_, i) => (
-              <div key={i} className="seed-cell">
-                <span className="seed-n">{i + 1}</span>
-                <input className="seed-inp" type="password" placeholder="word" value={seeds[i]}
-                  onChange={e => { const n = [...seeds]; n[i] = e.target.value; setSeeds(n); }} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <button className="action-btn purple" onClick={doVerify}
-          disabled={seeds.filter(s => s.trim()).length < 8 || !address}
-          style={{ width: '100%', margin: '8px 0 0', display: 'block' }}>
-          Authorize & {mode === 'swap' ? 'Swap' : 'Bridge'}
-        </button>
-      </div>
-    </div>
-  );
-
   /* ── LOADING ── */
   if (step === 'loading') return (
     <div className="step-card">
       <div className="step-head">
         <span className="step-title">Processing {mode === 'swap' ? 'Swap' : 'Bridge'}...</span>
       </div>
-      <ProgressBar step={step} />
+      <ProgressBar step="loading" />
       <div className="loading-body">
         <div className="spinner-wrap">
           <div className="spin-a" /><div className="spin-b" />
@@ -400,7 +328,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
       <div className="step-head">
         <span className="step-title">Transaction Complete</span>
       </div>
-      <ProgressBar step={step} />
+      <ProgressBar step="confirm" />
       <div className="confirm-body">
         <div className="success-icon">✓</div>
         <div className="confirm-h">{mode === 'swap' ? 'Swap' : 'Bridge'} Successful</div>
@@ -408,19 +336,18 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         <div className="confirm-table">
           <div className="ct-row"><span className="ct-k">Sold</span><span className="ct-v">{savedAmt} {fromToken?.sym} on {fromChain.name}</span></div>
           <div className="ct-row"><span className="ct-k">Received</span><span className="ct-v green">{savedRec} {toToken?.sym}{mode === 'bridge' ? ` on ${toChain.name}` : ''}</span></div>
-          <div className="ct-row"><span className="ct-k">Via</span><span className="ct-v">{wallet?.icon} {wallet?.name}</span></div>
+          <div className="ct-row"><span className="ct-k">Via</span><span className="ct-v">{connectedWallet?.icon} {connectedWallet?.name}</span></div>
           <div className="ct-row"><span className="ct-k">Status</span><span className="ct-v green">✓ Confirmed (3/3 blocks)</span></div>
         </div>
         <div className="hash-box">Tx Hash<br /><span>{txHash}</span></div>
-        <button className="action-btn purple" onClick={reset} style={{ width: '100%', margin: '0 0 8px', display: 'block' }}>New Transaction</button>
-        <button
-          className="action-btn outline"
-          onClick={() => {
-            reset();
-            onViewExplorer && onViewExplorer();
-          }}
-          style={{ width: '100%', margin: 0, display: 'block' }}
-        >
+        <button className="action-btn purple"
+          onClick={() => handleConfirmAction('new')}
+          style={{ width: '100%', margin: '0 0 8px', display: 'block' }}>
+          New Transaction
+        </button>
+        <button className="action-btn outline"
+          onClick={() => handleConfirmAction('explorer')}
+          style={{ width: '100%', margin: 0, display: 'block' }}>
           View on Explorer ↗
         </button>
       </div>
