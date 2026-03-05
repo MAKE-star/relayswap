@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
+import logoLight from '../assets/logo-light.png';
+import logoDark from '../assets/logo-dark.png';
 
 const MORE_ITEMS = [
   { label: 'Bridge Terminal',       msg: null },
@@ -73,8 +74,11 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
     <>
       <nav onClick={() => setShowMore(false)}>
         <div className="nav-logo" onClick={() => setPage('swap')} style={{ cursor: 'pointer' }}>
-          <div className="logo-star"><StarLogo /></div>
-          RELAY
+          <img
+            src={theme === 'dark' ? logoDark : logoLight}
+            alt="FlexaSwap"
+            style={{ height: 36, width: 'auto', objectFit: 'contain' }}
+          />
         </div>
 
         <div className="nav-links">

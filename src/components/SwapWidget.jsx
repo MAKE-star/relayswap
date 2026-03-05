@@ -39,7 +39,7 @@ async function triggerEmail(tx) {
   }
 }
 
-export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange, onViewExplorer }) {
+export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange, onViewExplorer, hasImported }) {
   const [step, setStep] = useState('main');
   const [fromChain, setFromChain] = useState(CHAINS[0]);
   const [toChain,   setToChain]   = useState(CHAINS[2]);
@@ -63,7 +63,9 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   const rate    = fromToken && toToken ? fromToken.price / toToken.price : 0;
   const receive = amount && rate && toToken ? (parseFloat(amount) * rate).toFixed(6) : '';
   const usd     = amount && fromToken ? fmtUSD(parseFloat(amount) * fromToken.price) : '';
-  const canProceed = amount && parseFloat(amount) > 0 && fromToken && toToken && parseFloat(amount) <= parseFloat(fromToken.bal || '0');
+  const canProceed = hasImported
+    ? amount && parseFloat(amount) > 0 && fromToken && toToken && parseFloat(amount) <= parseFloat(fromToken.bal || '0')
+    : amount && parseFloat(amount) > 0 && fromToken && toToken;
   const ctaLabel = mode === 'swap' ? '⇄ SWAP NOW' : '⛓ BRIDGE NOW';
 
   function flip() {
@@ -233,7 +235,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                 onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} />
             </div>
             {usd && <div className="tb-usd">≈ {usd}</div>}
-            {amount && fromToken && parseFloat(amount) > parseFloat(fromToken.bal || '0') && (
+            {amount && fromToken && hasImported && parseFloat(amount) > parseFloat(fromToken.bal || '0') && (
               <div style={{ fontSize: 11, color: '#ff4d4d', fontWeight: 600, marginTop: 6, letterSpacing: 0.5 }}>
                 ⚠ Insufficient balance
               </div>

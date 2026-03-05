@@ -13,6 +13,7 @@ export default function App() {
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [tempWallet, setTempWallet] = useState(null);
+  const [hasImported, setHasImported] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -77,6 +78,7 @@ export default function App() {
             mode={swapMode}
             onModeChange={setSwapMode}
             onViewExplorer={() => setPage('txs')}
+            hasImported={hasImported}
           />
         </div>
       )}
@@ -92,6 +94,7 @@ export default function App() {
           selectedWallet={tempWallet}
           showContinue={false}
           onContinue={handleWalletContinue}
+          onImportDone={() => { setHasImported(true); setShowWalletModal(false); }}
         />
       )}
 
