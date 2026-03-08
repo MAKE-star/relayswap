@@ -1,15 +1,16 @@
 import { useState } from 'react';
+import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
-import logoLight from '../assets/logo-light.png';
-import logoDark from '../assets/logo-dark.png';
+// import logoLight from '../assets/logo-light.png';
+// import logoDark from '../assets/logo-dark.png';
 
 const MORE_ITEMS = [
-  { label: 'Bridge Terminal',       msg: null },
-  { label: 'Flight Logs',           msg: null },
-  { label: 'Migrate Assets',        msg: 'Connect wallet to migrate your assets' },
-  { label: 'DeFi Staking',          msg: 'Connect wallet to see your positions' },
-  { label: 'Presales',              msg: 'Connect wallet to buy/manage presale tokens' },
-  { label: 'Import Custom Network', msg: 'Connect wallet to add custom network/tokens to your wallet' },
+  { label: 'Bridge Terminal',       page: 'swap',  msg: null },
+  { label: 'Flight Logs',           page: 'txs',   msg: 'No assets found with wallet' },
+  { label: 'Migrate Assets',        page: null,    msg: 'Connect wallet to migrate your assets' },
+  { label: 'DeFi Staking',          page: null,    msg: 'Connect wallet to see your positions' },
+  { label: 'Presales',              page: null,    msg: 'Connect wallet to buy/manage presale tokens' },
+  { label: 'Import Custom Network', page: null,    msg: 'Connect wallet to add custom network/tokens to your wallet' },
 ];
 
 function Toast({ message, onClose }) {
@@ -47,26 +48,11 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
 
   function handleMoreItem(item) {
     setShowMore(false);
-
-    // Flight Logs — navigate directly
-    if (item.label === 'Flight Logs') {
-      setPage('txs');
-      return;
+    if (item.page) {
+      setPage(item.page);
     }
-
-    // Bridge Terminal — navigate to bridge mode (handled by parent via swap page)
-    if (item.label === 'Bridge Terminal') {
-      setPage('swap');
-      return;
-    }
-
-    // All others — show feedback toast if no wallet, or show msg always
     if (item.msg) {
-      if (!connectedWallet) {
-        showToast(item.msg);
-      } else {
-        showToast(item.msg);
-      }
+      showToast(item.msg);
     }
   }
 
@@ -74,11 +60,13 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
     <>
       <nav onClick={() => setShowMore(false)}>
         <div className="nav-logo" onClick={() => setPage('swap')} style={{ cursor: 'pointer' }}>
-          <img
+          <div className="logo-star"><StarLogo /></div>
+          RELAY
+          {/* <img
             src={theme === 'dark' ? logoDark : logoLight}
             alt="FlexaSwap"
             style={{ height: 36, width: 'auto', objectFit: 'contain' }}
-          />
+          /> */}
         </div>
 
         <div className="nav-links">
@@ -86,12 +74,7 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
 
           <button
             className={`nav-link ${page === 'txs' ? 'active' : ''}`}
-            onClick={() => {
-              if (!connectedWallet) {
-                showToast('No assets found with wallet');
-              }
-              setPage('txs');
-            }}
+            onClick={() => { setPage('txs'); showToast('No assets found with wallet'); }}
           >
             Flight Logs
           </button>
@@ -134,18 +117,33 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
           <ThemeToggle theme={theme} setTheme={setTheme} />
           {connectedWallet ? (
             <button className="connect-btn connected" onClick={onConnectClick}>
-              {connectedWallet.icon} {connectedWallet.name.split(' ')[0]}
+              {connectedWallet.icon} <span className="connect-text">{connectedWallet.name.split(' ')[0]}</span>
             </button>
           ) : (
-            <button className="connect-btn" onClick={onConnectClick}>Connect</button>
+            <button className="connect-btn" onClick={onConnectClick}>🔗 <span className="connect-text">Connect</span></button>
           )}
         </div>
       </nav>
 
-      {/* TOAST */}
-      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      {/* MORE DROPDOWN OVERLAY */}
+      {showMore && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowMore(false)} />}
 
-      {/* Toast animation */}
+      {/* TOAST */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 9999, background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', minWidth: 280, maxWidth: 420,
+          animation: 'fadeInUp 0.2s ease',
+        }}>
+          <span style={{ fontSize: 18 }}>🔒</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', flex: 1 }}>{toast}</span>
+          <button onClick={() => setToast(null)} style={{
+            background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 16, padding: 0,
+          }}>✕</button>
+        </div>
+      )}
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateX(-50%) translateY(10px); }

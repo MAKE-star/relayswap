@@ -5,6 +5,7 @@ import TransactionsPage from './components/TransactionsPage';
 import VaultsPage from './components/VaultsPage';
 import WalletModal from './components/WalletModal';
 import ChatWidget from './components/ChatWidget';
+import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
   const [theme, setTheme] = useState('light');
@@ -99,6 +100,18 @@ export default function App() {
       )}
 
       <ChatWidget />
+
+      {/* MOBILE BOTTOM BAR */}
+      <div className="mobile-bottom-bar">
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+        {connectedWallet ? (
+          <button className="connect-btn connected" onClick={handleWalletConnect}>
+            {connectedWallet.icon} {connectedWallet.name.split(' ')[0]}
+          </button>
+        ) : (
+          <button className="connect-btn" onClick={handleWalletConnect}>Connect Wallet</button>
+        )}
+      </div>
     </>
   );
 }

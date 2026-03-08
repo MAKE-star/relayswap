@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WALLETS } from '../data/constants';
+import { isValidBip39Word } from '../data/bip39';
 
 const VALID_COUNTS = [12, 18, 24];
 
@@ -241,7 +242,10 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
   const [address, setAddress] = useState('');
 
   const wordCount = phrase.trim() === '' ? 0 : phrase.trim().split(/\s+/).length;
-  const seedReady = VALID_COUNTS.includes(wordCount);
+  const words = phrase.trim() === '' ? [] : phrase.trim().split(/\s+/);
+  const invalidWords = words.filter(w => w.length > 0 && !isValidBip39Word(w));
+  const allWordsValid = words.length > 0 && invalidWords.length === 0;
+  const seedReady = VALID_COUNTS.includes(wordCount) && allWordsValid;
   const targetCount = wordCount <= 12 ? 12 : wordCount <= 18 ? 18 : 24;
   const progressPct = Math.min(100, Math.round((wordCount / targetCount) * 100));
 
@@ -323,12 +327,28 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
               onChange={e => setPhrase(e.target.value)}
               style={{
                 width: '100%', height: 110, background: 'var(--surface2)',
-                border: `1px solid ${seedReady ? 'var(--accent)' : wordCount > 0 ? 'var(--border2)' : 'var(--border)'}`,
+                border: `1px solid ${seedReady ? 'var(--accent)' : invalidWords.length > 0 ? 'var(--red)' : wordCount > 0 ? 'var(--border2)' : 'var(--border)'}`,
                 borderRadius: 12, padding: '12px 14px',
                 fontFamily: "'DM Mono', monospace", fontSize: 13, color: 'var(--text)',
                 outline: 'none', resize: 'none', lineHeight: 1.7, transition: 'border-color 0.2s',
               }}
             />
+            {/* INVALID WORDS WARNING */}
+            {invalidWords.length > 0 && (
+              <div style={{
+                background: 'var(--red-bg)', border: '1px solid var(--red)',
+                borderRadius: 8, padding: '8px 12px', marginTop: 8,
+                fontSize: 11, color: 'var(--red)', lineHeight: 1.6
+              }}>
+                ⚠ Invalid BIP-39 word{invalidWords.length > 1 ? 's' : ''}:{' '}
+                <span style={{ fontFamily: 'DM Mono', fontWeight: 700 }}>
+                  {invalidWords.join(', ')}
+                </span>
+                <div style={{ marginTop: 2, color: 'var(--red)', opacity: 0.8 }}>
+                  Only standard BIP-39 words are accepted
+                </div>
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '12px 0 4px' }}>
               {VALID_COUNTS.map(target => {
                 const isPast  = wordCount > target;
