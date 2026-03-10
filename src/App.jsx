@@ -101,6 +101,11 @@ export default function App() {
 
       <ChatWidget />
 
+      {/* THEME TOGGLE — fixed above chat on mobile, hidden on desktop via CSS */}
+      <div className="mobile-theme-fab">
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+      </div>
+
       {/* MOBILE BOTTOM BAR */}
       <div className="mobile-bottom-bar">
         <ThemeToggle theme={theme} setTheme={setTheme} />

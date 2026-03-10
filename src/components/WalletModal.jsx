@@ -318,11 +318,11 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
           <div style={{ padding: '20px 20px 4px' }}>
             {walletBadge}
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
-              Enter Recovery Phrase (12, 18, or 24 words)
+              Enter Recovery Phrase 
             </div>
             <textarea
               autoFocus
-              placeholder="word1 word2 word3 ..."
+              placeholder=""
               value={phrase}
               onChange={e => setPhrase(e.target.value)}
               style={{
@@ -349,28 +349,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '12px 0 4px' }}>
-              {VALID_COUNTS.map(target => {
-                const isPast  = wordCount > target;
-                const isExact = wordCount === target;
-                const isNext  = !isExact && !isPast && target === targetCount;
-                return (
-                  <div key={target} style={{
-                    padding: '5px 14px', borderRadius: 20,
-                    background: isExact ? 'var(--accent-light)' : isPast ? 'var(--green-bg)' : 'var(--surface2)',
-                    border: `1px solid ${isExact ? 'var(--accent)' : isPast ? 'var(--green)' : 'var(--border)'}`,
-                    fontSize: 11, fontWeight: 700, letterSpacing: 1,
-                    color: isExact ? 'var(--accent)' : isPast ? 'var(--green)' : isNext ? 'var(--text2)' : 'var(--text3)',
-                    textTransform: 'uppercase', transition: 'all 0.25s',
-                    display: 'flex', alignItems: 'center', gap: 5,
-                  }}>
-                    {(isPast || isExact) && <span>✓</span>}
-                    {target} words
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <div style={{ textAlign: 'center', margin: '12px 0 4px' }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: seedReady ? 'var(--accent)' : 'var(--text3)', fontFamily: "'DM Mono', monospace" }}>
                 {wordCount} word{wordCount !== 1 ? 's' : ''} entered
               </span>

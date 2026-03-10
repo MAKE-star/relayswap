@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CHAINS, TOKENS, WALLETS, genHash, fmtUSD } from '../data/constants';
 import { TokenIcon, ChainIcon, TokenChainIcons } from './Icons';
 import TokenSelectorModal from './TokenSelectorModal';
@@ -6,12 +6,42 @@ import { saveTransaction } from '../lib/supabase';
 
 const STEP_ORDER = ['loading', 'confirm'];
 
+// CoinGecko ID map
+const COINGECKO_IDS = {
+  ETH: 'ethereum', BTC: 'bitcoin', WBTC: 'wrapped-bitcoin', WETH: 'weth',
+  USDT: 'tether', USDC: 'usd-coin', USDS: 'usds', DAI: 'dai', BUSD: 'binance-usd',
+  BNB: 'binancecoin', SOL: 'solana', AVAX: 'avalanche-2',
+  POL: 'matic-network', ARB: 'arbitrum', OP: 'optimism', LINK: 'chainlink',
+  UNI: 'uniswap', AAVE: 'aave', CAKE: 'pancakeswap-token', JUP: 'jupiter-exchange-solana',
+  stETH: 'staked-ether', cbBTC: 'coinbase-wrapped-btc',
+  'SHIBA INU': 'shiba-inu', PEPE: 'pepe', TRX: 'tron', TON: 'the-open-network',
+  SUI: 'sui', CRO: 'crypto-com-chain', TRUMP: 'official-trump', RAY: 'raydium',
+  NOT: 'notcoin', TWT: 'trust-wallet-token', WBNB: 'wbnb', XRP: 'ripple',
+};
+
+async function fetchPrices(symbols) {
+  const ids = [...new Set(symbols.map(s => COINGECKO_IDS[s]).filter(Boolean))];
+  if (!ids.length) return {};
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    const data = await res.json();
+    const prices = {};
+    for (const [sym, id] of Object.entries(COINGECKO_IDS)) {
+      if (data[id]?.usd) prices[sym] = data[id].usd;
+    }
+    return prices;
+  } catch {
+    return {};
+  }
+}
+
 function ProgressBar({ step }) {
-  const segments = 4;
-  const idx = STEP_ORDER.indexOf(step);
   return (
     <div className="progress-bar-row">
-      {Array(segments).fill(0).map((_, i) => (
+      {Array(4).fill(0).map((_, i) => (
         <div key={i} className={`prog-seg ${
           step === 'confirm' ? 'done' :
           step === 'loading' && i === 0 ? 'active' : ''
@@ -23,20 +53,15 @@ function ProgressBar({ step }) {
 
 async function triggerEmail(tx) {
   try {
-    await fetch(
-      `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify(tx),
-      }
-    );
-  } catch (e) {
-    console.error('Email trigger failed:', e);
-  }
+    await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(tx),
+    });
+  } catch (e) { console.error('Email trigger failed:', e); }
 }
 
 export default function SwapWidget({ connectedWallet, onConnectClick, mode, onModeChange, onViewExplorer, hasImported }) {
@@ -57,12 +82,42 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   const [txHash,    setTxHash]    = useState('');
   const [savedAmt,  setSavedAmt]  = useState('');
   const [savedRec,  setSavedRec]  = useState('');
-  const [savedTx,   setSavedTx]   = useState(null); // holds DB record for email
+  const [savedTx,   setSavedTx]   = useState(null);
+
+  // ── LIVE PRICES ──
+  const [livePrices, setLivePrices] = useState({});
+  const [priceStatus, setPriceStatus] = useState('loading');
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const intervalRef = useRef(null);
+
+  async function loadPrices() {
+    const syms = [fromToken?.sym, toToken?.sym].filter(Boolean);
+    const prices = await fetchPrices(syms);
+    if (Object.keys(prices).length > 0) {
+      setLivePrices(prev => ({ ...prev, ...prices }));
+      setPriceStatus('live');
+      setLastUpdated(new Date());
+    } else {
+      setPriceStatus('error');
+    }
+  }
+
+  useEffect(() => {
+    loadPrices();
+    intervalRef.current = setInterval(loadPrices, 30000);
+    return () => clearInterval(intervalRef.current);
+  }, [fromToken?.sym, toToken?.sym]);
+
+  // Use live price if available, fall back to constants
+  const fromPrice = livePrices[fromToken?.sym] ?? fromToken?.price ?? 0;
+  const toPrice   = livePrices[toToken?.sym]   ?? toToken?.price   ?? 0;
 
   const displaySlip = slippage === 'custom' ? (customSlip || '—') : slippage;
-  const rate    = fromToken && toToken ? fromToken.price / toToken.price : 0;
+  const rate    = fromPrice && toPrice ? fromPrice / toPrice : 0;
   const receive = amount && rate && toToken ? (parseFloat(amount) * rate).toFixed(6) : '';
-  const usd     = amount && fromToken ? fmtUSD(parseFloat(amount) * fromToken.price) : '';
+  const usdFrom = amount && fromPrice ? fmtUSD(parseFloat(amount) * fromPrice) : '';
+  const usdTo   = receive && toPrice  ? fmtUSD(parseFloat(receive) * toPrice)  : '';
+
   const canProceed = hasImported
     ? amount && parseFloat(amount) > 0 && fromToken && toToken && parseFloat(amount) <= parseFloat(fromToken.bal || '0')
     : amount && parseFloat(amount) > 0 && fromToken && toToken;
@@ -113,8 +168,6 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
       if (p >= 100) {
         setBlocksDone([true, true, true]);
         clearInterval(iv);
-
-        // Save to DB silently in background
         const txRecord = {
           tx_hash: hash,
           wallet_address: connectedWallet.address || '0xDEMO',
@@ -125,22 +178,17 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
           to_amount: parseFloat(receive || '0'),
           from_chain: fromChain.name,
           to_chain: mode === 'bridge' ? toChain.name : fromChain.name,
-          mode,
-          status: 'confirmed',
+          mode, status: 'confirmed',
         };
         const saved = await saveTransaction(txRecord);
-        setSavedTx(saved); // store for email trigger later
-
+        setSavedTx(saved);
         setTimeout(() => setStep('confirm'), 500);
       }
     }, 350);
   }
 
-  // Called when user clicks either button on confirm screen
   async function handleConfirmAction(action) {
-    // Send email now that user has acknowledged the transaction
     if (savedTx) await triggerEmail(savedTx);
-
     reset();
     if (action === 'explorer') onViewExplorer?.();
   }
@@ -205,6 +253,21 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
           </div>
         </div>
 
+        {/* PRICE STATUS BAR */}
+        <div style={{ padding: '4px 20px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: priceStatus === 'live' ? 'var(--green)' : priceStatus === 'error' ? 'var(--red)' : 'var(--orange)',
+            animation: priceStatus === 'live' ? 'pulse-dot 2s infinite' : 'none',
+          }} />
+          <span style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', letterSpacing: 0.5 }}>
+            {priceStatus === 'live'
+              ? `LIVE · refreshes in 30s · ${lastUpdated ? lastUpdated.toLocaleTimeString() : ''}`
+              : priceStatus === 'error' ? 'PRICE FEED UNAVAILABLE · using cached prices'
+              : 'FETCHING PRICES...'}
+          </span>
+        </div>
+
         {/* MODE TABS */}
         <div className="mode-tabs">
           {['swap', 'bridge'].map(m => (
@@ -234,7 +297,12 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
               <input className="tb-amount" placeholder="0.00" value={amount}
                 onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} />
             </div>
-            {usd && <div className="tb-usd">≈ {usd}</div>}
+            {usdFrom && <div className="tb-usd">≈ {usdFrom}</div>}
+            {fromPrice > 0 && fromToken && (
+              <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', marginTop: 2 }}>
+                1 {fromToken.sym} = ${fromPrice.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+              </div>
+            )}
             {amount && fromToken && hasImported && parseFloat(amount) > parseFloat(fromToken.bal || '0') && (
               <div style={{ fontSize: 11, color: '#ff4d4d', fontWeight: 600, marginTop: 6, letterSpacing: 0.5 }}>
                 ⚠ Insufficient balance
@@ -270,6 +338,12 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                 {receive || '0.000000'}
               </div>
             </div>
+            {usdTo && <div className="tb-usd" style={{ color: 'var(--green)', opacity: 0.8 }}>≈ {usdTo}</div>}
+            {toPrice > 0 && toToken && (
+              <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', marginTop: 2 }}>
+                1 {toToken.sym} = ${toPrice.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+              </div>
+            )}
           </div>
         </div>
 
