@@ -8,6 +8,21 @@
   padding: 0;
 }
 
+/* ── PREVENT iOS AUTO-ZOOM ON INPUT FOCUS ── */
+input,
+textarea,
+select {
+  font-size: 16px !important;
+  touch-action: manipulation;
+}
+
+/* ── PREVENT PAGE SCALE SHIFT ON MODAL OPEN ── */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 /* ══════════════════════════════════════════
    LIGHT THEME
 ══════════════════════════════════════════ */
