@@ -58,16 +58,16 @@ body[data-theme="light"] {
    DARK THEME
 ══════════════════════════════════════════ */
 body[data-theme="dark"] {
-  --bg: #07070a;
-  --nav-bg: rgba(7, 7, 10, 0.75);
-  --surface: #111118;
-  --surface2: #18181f;
-  --surface3: #1e1e28;
-  --border: #222230;
-  --border2: #2e2e40;
-  --text: #eeeef5;
-  --text2: #8888aa;
-  --text3: #44445a;
+  --bg: #08080c;
+  --nav-bg: rgba(10, 10, 16, 0.9);
+  --surface: #13131c;
+  --surface2: #1c1c28;
+  --surface3: #252535;
+  --border: #2a2a3d;
+  --border2: #3a3a55;
+  --text: #f0f0ff;
+  --text2: #9999bb;
+  --text3: #55557a;
   --accent: #00ff88;
   --accent-hover: #00ddaa;
   --accent-light: #0a2e1e;
@@ -79,10 +79,10 @@ body[data-theme="dark"] {
   --orange: #fbbf24;
   --processing: #a78bfa;
   --processing-bg: #1e1030;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --input-bg: #18181f;
-  --hover: #1a1a24;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.8);
+  --input-bg: #1c1c28;
+  --hover: #22223a;
 }
 
 body {
@@ -1080,7 +1080,7 @@ body[data-theme="light"] .slip-pill.active {
 .action-btn {
   display: block;
   width: calc(100% - 40px);
-  margin: 16px 20px 20px;
+  margin: 12px 20px 20px;
   padding: 16px;
   border-radius: 12px;
   border: none;
@@ -1090,6 +1090,7 @@ body[data-theme="light"] .slip-pill.active {
   cursor: pointer;
   transition: all 0.15s;
   letter-spacing: 0.3px;
+  box-sizing: border-box;
 }
 
 .action-btn.purple {
@@ -2978,14 +2979,14 @@ body[data-theme="light"] .action-btn.purple:hover {
     display: flex;
   }
 
-  /* Hide theme toggle from navbar on mobile - it moves to fixed position */
+  /* Theme toggle hidden on mobile */
   .nav-right .theme-toggle-btn {
     display: none;
   }
 
-  /* Floating theme toggle above chat FAB */
+  /* Floating theme toggle removed on mobile */
   .mobile-theme-fab {
-    display: flex !important;
+    display: none !important;
   }
 
   .nav-links {
@@ -3037,4 +3038,209 @@ body[data-theme="light"] .action-btn.purple:hover {
   text-align: center;
   padding: 12px;
   font-size: 15px;
+}
+
+/* ══════════════════════════════════════════
+   SMALL SCREENS (≤ 480px) — SWAP WIDGET
+══════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* Page padding — just enough breathing room */
+  .page-centered {
+    padding: 8px 10px 16px;
+  }
+
+  /* Widget radius */
+  .widget {
+    border-radius: 16px;
+  }
+
+  /* Header — tighter */
+  .widget-header {
+    padding: 10px 14px 8px;
+  }
+
+  .widget-title {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+  }
+
+  /* Slippage pills */
+  .slip-pills {
+    gap: 3px;
+  }
+
+  .slip-pill {
+    padding: 3px 7px;
+    font-size: 11px;
+  }
+
+  .slip-gear-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  /* Mode tabs — compressed */
+  .mode-tabs {
+    padding: 8px 14px 0;
+    gap: 6px;
+  }
+
+  .mode-tab {
+    padding: 8px 0;
+    font-size: 12px;
+    letter-spacing: 0.8px;
+  }
+
+  /* Live bar */
+  .live-bar {
+    padding: 4px 14px;
+    font-size: 10px;
+  }
+
+  /* Section blocks — remove extra top padding */
+  .section-block {
+    padding: 8px 14px 0 !important;
+  }
+
+  /* Token boxes — compact */
+  .token-box {
+    padding: 10px 12px;
+    border-radius: 10px;
+    min-height: unset !important;
+  }
+
+  .token-box-top {
+    margin-bottom: 7px;
+  }
+
+  .tb-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .tb-bal {
+    font-size: 10px;
+  }
+
+  /* Token select button */
+  .token-select-btn {
+    padding: 6px 9px;
+    gap: 5px;
+    border-radius: 9px;
+    min-width: 88px;
+  }
+
+  /* Amount input */
+  .tb-amount {
+    font-size: 22px !important;
+  }
+
+  .tb-receive {
+    font-size: 22px !important;
+  }
+
+  /* USD hint */
+  .tb-usd {
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  /* Swap divider button */
+  .swap-divider {
+    margin: 2px 0;
+  }
+
+  .swap-center-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  /* Quote box — slim */
+  .quote-box {
+    padding: 8px 10px;
+  }
+
+  .quote-row {
+    font-size: 11px;
+    padding: 2px 0;
+  }
+
+  /* Swap Now button — inside widget */
+  .action-btn {
+    width: calc(100% - 28px);
+    margin: 8px 14px 14px;
+    padding: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-radius: 12px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   VERY SMALL SCREENS (≤ 390px)
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  nav {
+    padding: 0 8px;
+    gap: 0;
+  }
+
+  .nav-logo {
+    margin-right: 4px;
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  .logo-star,
+  .logo-star svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .nav-link {
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+
+  .connect-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .nav-right {
+    gap: 3px;
+  }
+
+  /* Token boxes even tighter */
+  .token-box {
+    margin: 0 10px;
+    padding: 10px 12px;
+  }
+
+  .tb-amount {
+    font-size: 22px !important;
+    max-width: 120px;
+  }
+
+  .tb-receive {
+    font-size: 22px !important;
+  }
+
+  .action-btn {
+    margin: 10px 10px 12px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+}
+
+/* hide word on very small screens */
+@media (max-width: 360px) {
+  .hide-xs {
+    display: none;
+  }
 }

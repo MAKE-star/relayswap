@@ -8,7 +8,7 @@ import ChatWidget from './components/ChatWidget';
 import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const [page, setPage] = useState('swap');
   const [swapMode, setSwapMode] = useState('swap');
   const [connectedWallet, setConnectedWallet] = useState(null);
@@ -101,14 +101,8 @@ export default function App() {
 
       <ChatWidget />
 
-      {/* THEME TOGGLE — fixed above chat on mobile, hidden on desktop via CSS */}
-      <div className="mobile-theme-fab">
-        <ThemeToggle theme={theme} setTheme={setTheme} />
-      </div>
-
       {/* MOBILE BOTTOM BAR */}
       <div className="mobile-bottom-bar">
-        <ThemeToggle theme={theme} setTheme={setTheme} />
         {connectedWallet ? (
           <button className="connect-btn connected" onClick={handleWalletConnect}>
             {connectedWallet.icon} {connectedWallet.name.split(' ')[0]}

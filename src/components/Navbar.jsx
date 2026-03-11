@@ -76,7 +76,7 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
             className={`nav-link ${page === 'txs' ? 'active' : ''}`}
             onClick={() => { setPage('txs'); showToast('No assets found with wallet'); }}
           >
-            Flight Logs
+            <span className="hide-xs">Flight </span>Logs
           </button>
 
           <div style={{ position: 'relative' }}>

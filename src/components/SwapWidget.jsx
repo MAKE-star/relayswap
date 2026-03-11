@@ -317,7 +317,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         </div>
 
         {/* YOU RECEIVE */}
-        <div className="section-block" style={{ paddingBottom: 16 }}>
+        <div className="section-block" style={{ paddingBottom: 8 }}>
           <div className="token-box" style={{ minHeight: 90 }}>
             <div className="token-box-top">
               <span className="tb-label">YOU RECEIVE</span>
@@ -364,7 +364,7 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         <button
           className="action-btn purple"
           onClick={startSwap}
-          style={{ marginTop: 14, opacity: canProceed ? 1 : 0.45, cursor: canProceed ? 'pointer' : 'not-allowed' }}
+          style={{ opacity: canProceed ? 1 : 0.45, cursor: canProceed ? 'pointer' : 'not-allowed' }}
         >
           {ctaLabel}
         </button>
