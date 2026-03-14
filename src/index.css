@@ -2061,9 +2061,9 @@ body[data-theme="light"] .action-btn.purple:hover {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 72px 16px 16px;
+  padding: 16px;
   animation: fadeIn .15s ease;
   overflow-y: auto;
 }
@@ -3005,6 +3005,11 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @media (max-width: 480px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 72px 16px 16px;
+  }
+
   .chat-panel {
     width: calc(100vw - 32px);
     right: 16px;
