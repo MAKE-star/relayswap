@@ -6,7 +6,6 @@ import { saveTransaction } from '../lib/supabase';
 
 const STEP_ORDER = ['loading', 'confirm'];
 
-// CoinGecko ID map
 const COINGECKO_IDS = {
   ETH: 'ethereum', BTC: 'bitcoin', WBTC: 'wrapped-bitcoin', WETH: 'weth',
   USDT: 'tether', USDC: 'usd-coin', USDS: 'usds', DAI: 'dai', BUSD: 'binance-usd',
@@ -84,7 +83,6 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
   const [savedRec,  setSavedRec]  = useState('');
   const [savedTx,   setSavedTx]   = useState(null);
 
-  // ── LIVE PRICES ──
   const [livePrices, setLivePrices] = useState({});
   const [priceStatus, setPriceStatus] = useState('loading');
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -108,13 +106,17 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
     return () => clearInterval(intervalRef.current);
   }, [fromToken?.sym, toToken?.sym]);
 
-  // Use live price if available, fall back to constants
   const fromPrice = livePrices[fromToken?.sym] ?? fromToken?.price ?? 0;
   const toPrice   = livePrices[toToken?.sym]   ?? toToken?.price   ?? 0;
 
   const displaySlip = slippage === 'custom' ? (customSlip || '—') : slippage;
   const rate    = fromPrice && toPrice ? fromPrice / toPrice : 0;
-  const receive = amount && rate && toToken ? (parseFloat(amount) * rate).toFixed(6) : '';
+  const rawReceive = amount && rate && toToken ? parseFloat(amount) * rate : null;
+  const receive = rawReceive !== null ? (() => {
+    const intLen = Math.floor(rawReceive).toString().length;
+    const decimals = intLen >= 8 ? 0 : intLen >= 6 ? 1 : intLen >= 4 ? 2 : intLen >= 2 ? 4 : 6;
+    return rawReceive.toFixed(decimals);
+  })() : '';
   const usdFrom = amount && fromPrice ? fmtUSD(parseFloat(amount) * fromPrice) : '';
   const usdTo   = receive && toPrice  ? fmtUSD(parseFloat(receive) * toPrice)  : '';
 
@@ -294,8 +296,22 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                   : <span>Select</span>}
                 <span className="tb-chev">▼</span>
               </div>
-              <input className="tb-amount" placeholder="0.00" value={amount}
-                onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} />
+              <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
+                <input className="tb-amount" placeholder="0.00"
+                  value={amount}
+                  onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                  style={{ opacity: amount.length > 6 ? 0 : 1, position: amount.length > 6 ? 'absolute' : 'relative', right: 0 }} />
+                {amount.length > 6 && (
+                  <div className="tb-amount" style={{ color: 'var(--text)', pointerEvents: 'none' }}>
+                    {amount.slice(0, 6)}…
+                  </div>
+                )}
+                {amount.length > 6 && (
+                  <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', marginTop: 2 }}>
+                    {amount} {fromToken?.sym}
+                  </div>
+                )}
+              </div>
             </div>
             {usdFrom && <div className="tb-usd">≈ {usdFrom}</div>}
             {fromPrice > 0 && fromToken && (
@@ -334,8 +350,15 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
                   : <span>Select</span>}
                 <span className="tb-chev">▼</span>
               </div>
-              <div className="tb-receive" style={{ color: receive ? 'var(--green)' : 'var(--text3)' }}>
-                {receive || '0.000000'}
+              <div style={{ flex: 1, textAlign: 'right', minWidth: 0 }}>
+                <div className="tb-receive" style={{ color: receive ? 'var(--green)' : 'var(--text3)' }}>
+                  {receive && receive.length > 9 ? receive.slice(0, 8) + '…' : (receive || '0.000000')}
+                </div>
+                {receive && receive.length > 9 && (
+                  <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', marginTop: 2 }}>
+                    {receive} {toToken?.sym}
+                  </div>
+                )}
               </div>
             </div>
             {usdTo && <div className="tb-usd" style={{ color: 'var(--green)', opacity: 0.8 }}>≈ {usdTo}</div>}
@@ -348,17 +371,15 @@ export default function SwapWidget({ connectedWallet, onConnectClick, mode, onMo
         </div>
 
         {/* QUOTE */}
-        {canProceed && (
-          <div className="section-block" style={{ paddingBottom: 4 }}>
-            <div className="quote-box">
-              <div className="quote-row"><span className="qk">Rate</span><span className="qv">1 {fromToken.sym} = {rate.toFixed(6)} {toToken?.sym}</span></div>
-              <div className="quote-row"><span className="qk">Slippage</span><span className="qv good">{displaySlip}%</span></div>
-              <div className="quote-row"><span className="qk">Est. Gas</span><span className="qv">~$2.14</span></div>
-              <div className="quote-row"><span className="qk">Route</span><span className="qv good">RELAY ▸ BEST</span></div>
-              {mode === 'bridge' && <div className="quote-row"><span className="qk">Est. Time</span><span className="qv">~2–4s</span></div>}
-            </div>
+        <div className="section-block" style={{ paddingBottom: 4 }}>
+          <div className="quote-box">
+            <div className="quote-row"><span className="qk">Rate</span><span className="qv">{canProceed ? `1 ${fromToken.sym} = ${rate.toFixed(6)} ${toToken?.sym}` : '—'}</span></div>
+            <div className="quote-row"><span className="qk">Slippage</span><span className="qv good">{displaySlip}%</span></div>
+            <div className="quote-row"><span className="qk">Est. Gas</span><span className="qv">{canProceed ? '~$0.45' : '—'}</span></div>
+            <div className="quote-row"><span className="qk">Route</span><span className="qv good">{canProceed ? 'RELAY ▸ BEST' : '—'}</span></div>
+            {mode === 'bridge' && <div className="quote-row"><span className="qk">Est. Time</span><span className="qv">{canProceed ? '~2–4s' : '—'}</span></div>}
           </div>
-        )}
+        </div>
 
         {/* CTA */}
         <button

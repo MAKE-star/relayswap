@@ -95,7 +95,7 @@ export default function App() {
           selectedWallet={tempWallet}
           showContinue={false}
           onContinue={handleWalletContinue}
-          onImportDone={() => { setHasImported(true); setShowWalletModal(false); }}
+          onImportDone={() => { setHasImported(true); setConnectedWallet(tempWallet); setShowWalletModal(false); }}
         />
       )}
 
