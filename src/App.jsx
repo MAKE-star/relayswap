@@ -8,7 +8,7 @@ import ChatWidget from './components/ChatWidget';
 import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [page, setPage] = useState('swap');
   const [swapMode, setSwapMode] = useState('swap');
   const [connectedWallet, setConnectedWallet] = useState(null);

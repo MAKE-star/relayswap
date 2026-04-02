@@ -13,6 +13,7 @@ export const CHAINS = [
   { id: 'cronos',    name: 'Cronos',           short: 'CRO',   icon: '🔷', color: '#002D74', bg: '#000d1e' },
   { id: 'zksync',    name: 'zkSync',           short: 'ZK',    icon: '⚡', color: '#1755F4', bg: '#0d1530' },
   { id: 'scroll',    name: 'Scroll',           short: 'SCR',   icon: 'S',  color: '#EFBA6A', bg: '#2a1e00' },
+  { id: 'blockdag',  name: 'BlockDAG Mainnet', short: 'BDAG',  icon: '◆',  color: '#7B2FBE', bg: '#1a0d2a' },
 ];
 
 export const TOKENS = {
@@ -156,6 +157,11 @@ export const TOKENS = {
   scroll: [
     { sym: 'ETH',  name: 'Ethereum', price: 3241.5, icon: '⟠', color: '#627EEA', bg: '#1a1f3a', bal: '0.00' },
     { sym: 'USDC', name: 'USD Coin', price: 1.00,   icon: '$', color: '#2775CA', bg: '#0d1a2a', bal: '0.00' },
+  ],
+  blockdag: [
+    { sym: 'BDAG', name: 'BlockDAG', price: 0.021, icon: '◆', color: '#7B2FBE', bg: '#1a0d2a', bal: '0.00' },
+    { sym: 'USDT', name: 'Tether',   price: 1.00,  icon: '₮', color: '#26A17B', bg: '#0d2a1e', bal: '0.00' },
+    { sym: 'USDC', name: 'USD Coin', price: 1.00,  icon: '$', color: '#2775CA', bg: '#0d1a2a', bal: '0.00' },
   ],
 };
 

@@ -3010,6 +3010,10 @@ body[data-theme="light"] .action-btn.purple:hover {
     padding: 72px 16px 16px;
   }
 
+  .chat-fab {
+    display: none;
+  }
+
   .chat-panel {
     width: calc(100vw - 32px);
     right: 16px;

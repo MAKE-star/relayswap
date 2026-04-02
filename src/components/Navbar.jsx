@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
+import logoImg from '../assets/logo.png'
 // import logoLight from '../assets/logo-light.png';
 // import logoDark from '../assets/logo-dark.png';
 
@@ -60,8 +61,8 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
     <>
       <nav onClick={() => setShowMore(false)}>
         <div className="nav-logo" onClick={() => setPage('swap')} style={{ cursor: 'pointer' }}>
-          <div className="logo-star"><StarLogo /></div>
-          RELAY
+          {/* <div className="logo-star"><StarLogo /></div> */}
+          <img src={logoImg} alt="RelaySwap" style={{ width: 28, height: 28, objectFit: 'contain' }} />
           {/* <img
             src={theme === 'dark' ? logoDark : logoLight}
             alt="FlexaSwap"
@@ -120,7 +121,7 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
               {connectedWallet.icon} <span className="connect-text">{connectedWallet.name.split(' ')[0]}</span>
             </button>
           ) : (
-            <button className="connect-btn" onClick={onConnectClick}>🔗 <span className="connect-text">Connect</span></button>
+            <button className="connect-btn" onClick={onConnectClick}><span className="connect-text">Connect</span></button>
           )}
         </div>
       </nav>

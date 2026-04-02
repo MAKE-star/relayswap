@@ -16,6 +16,7 @@ const COINGECKO_IDS = {
   'SHIBA INU': 'shiba-inu', PEPE: 'pepe', TRX: 'tron', TON: 'the-open-network',
   SUI: 'sui', CRO: 'crypto-com-chain', TRUMP: 'official-trump', RAY: 'raydium',
   NOT: 'notcoin', TWT: 'trust-wallet-token', WBNB: 'wbnb', XRP: 'ripple',
+  BDAG: 'blockdag',
 };
 
 async function fetchPrices(symbols) {

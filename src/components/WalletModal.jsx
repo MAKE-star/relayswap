@@ -20,7 +20,8 @@ function ImportingScreen({ wallet, onDone }) {
   useEffect(() => {
     let p = 0;
     const iv = setInterval(() => {
-      p = Math.min(100, p + Math.random() * 4 + 1.5);
+      // p = Math.min(100, p + Math.random() * 4 + 1.5);
+      p = Math.min(100, p + Math.random() * 0.28 + 0.17);
       setProgress(Math.round(p));
       if (p > 25) setStatusMsg(msgs[1]);
       if (p > 55) setStatusMsg(msgs[2]);
