@@ -335,10 +335,9 @@ body[data-theme="light"] .connect-btn {
    MORE DROPDOWN
 ══════════════════════════════════════════ */
 .more-menu {
-  position: absolute;
-  top: 100%;
-  left: auto;
-  right: 0;
+  position: fixed;
+  top: auto;
+  right: 8px;
   z-index: 300;
   background: var(--surface);
   border: 1px solid var(--border);

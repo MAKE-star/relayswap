@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
-import logoImg from '../assets/logo.png'
+import logoImg from '../assets/logo2.jpeg'
 // import logoLight from '../assets/logo-light.png';
 // import logoDark from '../assets/logo-dark.png';
 
@@ -89,7 +89,7 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
               More ▾
             </button>
             {showMore && (
-              <div className="more-menu" onClick={e => e.stopPropagation()}>
+              <div className="more-menu" style={{ top: 56 }} onClick={e => e.stopPropagation()}>
                 {MORE_ITEMS.map(item => (
                   <div
                     key={item.label}
