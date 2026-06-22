@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import StarLogo from './StarLogo';
 import ThemeToggle from './ThemeToggle';
-import logoImg from '../assets/logo2.jpeg'
+import logoImg from '../assets/newLogo.jpeg'
 // import logoLight from '../assets/logo-light.png';
 // import logoDark from '../assets/logo-dark.png';
 
@@ -61,13 +61,18 @@ export default function Navbar({ page, setPage, theme, setTheme, connectedWallet
     <>
       <nav onClick={() => setShowMore(false)}>
         <div className="nav-logo" onClick={() => setPage('swap')} style={{ cursor: 'pointer' }}>
-          {/* <div className="logo-star"><StarLogo /></div> */}
-          <img src={logoImg} alt="RelaySwap" style={{ width: 80, height: 80, objectFit: 'contain' }} />
-          {/* <img
-            src={theme === 'dark' ? logoDark : logoLight}
-            alt="FlexaSwap"
-            style={{ height: 36, width: 'auto', objectFit: 'contain' }}
-          /> */}
+          <img
+            src={logoImg}
+            alt="RelaySwap"
+            style={{
+              width: 53,
+              height: 53,
+              objectFit: 'contain',
+              borderRadius: '50%',
+              mixBlendMode: theme === 'light' ? 'multiply' : 'normal',
+              background: theme === 'light' ? 'transparent' : 'none',
+            }}
+          />
         </div>
 
         <div className="nav-links">

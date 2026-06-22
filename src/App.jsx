@@ -8,7 +8,7 @@ import ChatWidget from './components/ChatWidget';
 import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const [page, setPage] = useState('swap');
   const [swapMode, setSwapMode] = useState('swap');
   const [connectedWallet, setConnectedWallet] = useState(null);
@@ -67,6 +67,9 @@ export default function App() {
           <div className="sub-stat">TVL <span>$18.7B</span></div>
           <div className="sub-stat">GAS <span>12 GWEI</span></div>
           <div className="sub-stat">BLOCK <span>#21,847,293</span></div>
+        </div>
+        <div className="sub-header-toggle">
+          <ThemeToggle theme={theme} setTheme={setTheme} />
         </div>
       </div>
 

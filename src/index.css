@@ -9,9 +9,7 @@
 }
 
 /* ── PREVENT iOS AUTO-ZOOM ON INPUT FOCUS ── */
-input,
-textarea,
-select {
+input, textarea, select {
   font-size: 16px !important;
   touch-action: manipulation;
 }
@@ -465,17 +463,8 @@ body[data-theme="light"] .connect-btn {
 }
 
 @keyframes sub-dot-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: .5;
-    transform: scale(.8);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
 }
 
 .sub-stats {
@@ -1162,15 +1151,8 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes ddIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .dd-search {
@@ -1511,9 +1493,7 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .spin-label {
@@ -1604,15 +1584,8 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes popIn {
-  from {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .confirm-h {
@@ -1645,7 +1618,7 @@ body[data-theme="light"] .action-btn.purple:hover {
   font-size: 12px;
 }
 
-.ct-row+.ct-row {
+.ct-row + .ct-row {
   border-top: 1px solid var(--border);
 }
 
@@ -1739,15 +1712,8 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes pulse-dot {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.4;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .live-label {
@@ -2068,13 +2034,8 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
@@ -2095,15 +2056,8 @@ body[data-theme="light"] .action-btn.purple:hover {
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(.97);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-head {
@@ -2905,19 +2859,20 @@ body[data-theme="light"] .action-btn.purple:hover {
   color: #5b21b6;
 }
 
-/* ══════════════════════════════════════════
-   MOBILE THEME FAB
-══════════════════════════════════════════ */
-.mobile-theme-fab {
+/* Desktop: hide sub-header toggle */
+.sub-header-toggle {
   display: none;
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  right: auto;
-  z-index: 600;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+@media (max-width: 768px) {
+  .sub-header-toggle {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+}
+.mobile-theme-fab {
+  display: none !important;
 }
 
 /* ══════════════════════════════════════════
@@ -2933,10 +2888,10 @@ body[data-theme="light"] .action-btn.purple:hover {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
-  .tx-thead>*:nth-child(4),
-  .tx-row>*:nth-child(4),
-  .tx-thead>*:nth-child(5),
-  .tx-row>*:nth-child(5) {
+  .tx-thead > *:nth-child(4),
+  .tx-row > *:nth-child(4),
+  .tx-thead > *:nth-child(5),
+  .tx-row > *:nth-child(5) {
     display: none;
   }
 
@@ -2984,14 +2939,14 @@ body[data-theme="light"] .action-btn.purple:hover {
     display: flex;
   }
 
-  /* Theme toggle hidden on mobile */
+  /* Theme toggle hidden in navbar on mobile - moved to subtitle bar */
   .nav-right .theme-toggle-btn {
     display: none;
   }
 
-  /* Floating theme toggle removed on mobile */
+  /* Floating theme toggle on mobile - bottom left */
   .mobile-theme-fab {
-    display: none !important;
+    display: flex !important;
   }
 
   .nav-links {
@@ -3058,7 +3013,6 @@ body[data-theme="light"] .action-btn.purple:hover {
    SMALL SCREENS (≤ 480px) — SWAP WIDGET
 ══════════════════════════════════════════ */
 @media (max-width: 480px) {
-
   /* Page padding — just enough breathing room */
   .page-centered {
     justify-content: flex-start;
@@ -3210,8 +3164,7 @@ body[data-theme="light"] .action-btn.purple:hover {
     gap: 5px;
   }
 
-  .logo-star,
-  .logo-star svg {
+  .logo-star, .logo-star svg {
     width: 26px;
     height: 26px;
   }
@@ -3256,7 +3209,5 @@ body[data-theme="light"] .action-btn.purple:hover {
 
 /* hide word on very small screens */
 @media (max-width: 360px) {
-  .hide-xs {
-    display: none;
-  }
+  .hide-xs { display: none; }
 }
