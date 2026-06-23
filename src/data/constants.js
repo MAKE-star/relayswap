@@ -201,6 +201,9 @@ export const WALLETS = [
   { id: 'bitget',        icon: '🅱', name: 'Bitget Wallet',      desc: 'Bitget Ecosystem' },
   { id: 'uniswap',       icon: '🦄', name: 'Uniswap Wallet',     desc: 'Uniswap Ecosystem' },
   { id: 'cakewallet',    icon: '🥞', name: 'Cake Wallet',        desc: 'Privacy & Monero' },
+  { id: 'cwallet',       icon: '💼', name: 'CWallet',            desc: 'Cross-Chain Wallet' },
+  { id: 'ambire',        icon: '🔥', name: 'Ambire Wallet',      desc: 'Smart Account Wallet' },
+  { id: 'backpack',      icon: '🎒', name: 'Backpack',           desc: 'xNFT Wallet' },
 ];
 
 export const TRENDING = [
@@ -232,4 +235,4 @@ export const genHash = () =>
   '0x' + Array.from({ length: 64 }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
 
 export const fmtUSD = (n) =>
-  n ? `$${parseFloat(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '';
+  n ? `$${parseFloat(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''; 

